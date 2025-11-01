@@ -1,10 +1,34 @@
-import { updateSession } from "@/lib/supabase/middleware"
+// middleware.ts (root of project)
+import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { createServerClient } from "@supabase/ssr"
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  const response = NextResponse.next()
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name) {
+          return request.cookies.get(name)?.value
+        },
+        set(name, value, options) {
+          response.cookies.set({ name, value, ...options })
+        },
+        remove(name, options) {
+          response.cookies.delete({ name, ...options })
+        },
+      },
+    }
+  )
+
+  // This ensures Supabase updates the session cookie automatically
+  await supabase.auth.getSession()
+  return response
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 }

@@ -4,13 +4,15 @@ import { Calendar, MapPin, Users, ArrowLeft, Share2, Bookmark } from "lucide-rea
 import Link from "next/link"
 import EventJoinButton from "@/components/event-join-button"
 
-export default async function EventDetailPage({ params }: { params: { id: string } }) {
+export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const event = await getEventById(params.id)
+  const event = await getEventById(id)
 
   if (!event) {
     return (
