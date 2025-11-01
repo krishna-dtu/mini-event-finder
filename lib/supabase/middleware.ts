@@ -1,9 +1,9 @@
-// middleware.ts (root of project)
+// lib/supabase/middleware.ts
+import { createServerClient } from "@supabase/ssr"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { createServerClient } from "@supabase/ssr"
 
-export async function middleware(request: NextRequest) {
+export async function updateSession(request: NextRequest) {
   const response = NextResponse.next()
 
   const supabase = createServerClient(
@@ -24,11 +24,6 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // This ensures Supabase updates the session cookie automatically
   await supabase.auth.getSession()
   return response
-}
-
-export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 }
